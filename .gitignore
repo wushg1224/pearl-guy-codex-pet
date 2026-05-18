@@ -1,0 +1,8 @@
+.DS_Store
+
+# Local generation runs and intermediate assets
+bead-girl-run/
+mochi-run/
+
+# Codex/app local metadata
+.codex/

@@ -1,9 +1,9 @@
 # Pearl Guy / 珍珠小子 Codex Pet
 
 Pearl Guy, or 珍珠小子, is a custom Codex pet inspired by Songyaxuan and handcraft 
-deco on Xiaohongshu
+deco on Xiaohongshu. His signature feature is a small mole beside his mouth.
 
-珍珠小子是一个自定义 Codex pet，灵感来自宋亚轩和小红书上的拼豆
+珍珠小子是一个自定义 Codex pet，灵感来自宋亚轩和小红书上的拼豆。他的标志性特征是嘴旁边有一颗小痣。
 
 ![Pearl Guy contact sheet](preview/contact-sheet.png)
 

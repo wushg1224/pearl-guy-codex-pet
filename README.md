@@ -1,26 +1,34 @@
-# Bead Girl Codex Pet
+# Pearl Guy / 珍珠小子 Codex Pet
 
-A custom Codex pet inspired by a handmade glossy pixel-bead charm: black glitter hair, peach face, pink cheeks, and a black-and-white checkered skirt.
+Pearl Guy, or 珍珠小子, is a custom Codex pet inspired by a handmade glossy pixel-bead charm: black glitter hair, peach face, pink cheeks, and a black-and-white checkered skirt.
 
-![Bead Girl contact sheet](preview/contact-sheet.png)
+珍珠小子是一个自定义 Codex pet，灵感来自手工拼豆滴胶挂件：黑色闪粉头发、肤色脸、粉色腮红，以及黑白格裙子。
 
-## Install
+![Pearl Guy contact sheet](preview/contact-sheet.png)
+
+## Install / 安装
 
 Copy the `bead-girl` folder into your Codex pets directory:
+
+把 `bead-girl` 文件夹复制到你的 Codex pets 目录：
 
 ```bash
 cp -R bead-girl ~/.codex/pets/
 ```
 
-Then choose `Bead Girl` from Codex Settings > Personalization > Pets, or refresh Codex if the pet list is already open.
+Then choose `Pearl Guy / 珍珠小子` from Codex Settings > Personalization > Pets, or refresh Codex if the pet list is already open.
 
-## Files
+然后在 Codex Settings > Personalization > Pets 里选择 `Pearl Guy / 珍珠小子`。如果 pet 列表已经打开，可以先刷新一下。
 
-- `bead-girl/pet.json` - Codex pet manifest
-- `bead-girl/spritesheet.webp` - final animated pet spritesheet
-- `preview/contact-sheet.png` - all states and frames
-- `preview/gifs/` - per-state animation previews
+## Files / 文件
 
-## States
+- `bead-girl/pet.json` - Codex pet manifest / Codex pet 配置文件
+- `bead-girl/spritesheet.webp` - final animated pet spritesheet / 最终动画雪碧图
+- `preview/contact-sheet.png` - all states and frames / 全部状态和帧预览
+- `preview/gifs/` - per-state animation previews / 每个状态的 GIF 预览
+
+## States / 状态
 
 Includes all 9 Codex pet states: idle, running-right, running-left, waving, jumping, failed, waiting, running, and review.
+
+包含 9 个 Codex pet 状态：idle、running-right、running-left、waving、jumping、failed、waiting、running 和 review。

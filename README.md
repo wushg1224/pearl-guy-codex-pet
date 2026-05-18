@@ -1,8 +1,9 @@
 # Pearl Guy / 珍珠小子 Codex Pet
 
-Pearl Guy, or 珍珠小子, is a custom Codex pet inspired by a handmade glossy pixel-bead charm: black glitter hair, peach face, pink cheeks, and a black-and-white checkered skirt.
+Pearl Guy, or 珍珠小子, is a custom Codex pet inspired by Songyaxuan and handcraft 
+deco on Xiaohongshu
 
-珍珠小子是一个自定义 Codex pet，灵感来自手工拼豆滴胶挂件：黑色闪粉头发、肤色脸、粉色腮红，以及黑白格裙子。
+珍珠小子是一个自定义 Codex pet，灵感来自宋亚轩和小红书上的拼豆
 
 ![Pearl Guy contact sheet](preview/contact-sheet.png)
 

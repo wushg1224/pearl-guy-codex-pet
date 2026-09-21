@@ -7,6 +7,14 @@ deco on Xiaohongshu. His signature feature is a small mole beside his mouth.
 
 ![Pearl Guy contact sheet](preview/contact-sheet.png)
 
+## 认真干活 / Working at the computer
+
+![认真干活：电脑打字循环动画](preview/gifs/running.gif)
+
+桌面版右键选择 **「认真干活 💻」**，珍珠小子会在电脑前持续循环打字。再次右键点击桌宠即可停止并打开菜单；鼠标移动、左键点击或拖动不会打断工作。
+
+此交互属于[独立桌面 App](desktop-app/README.md)，Codex 内的 pet 状态由 Codex 控制。上方动作概念图已同步更新，第 7 行 `running` 为新的 6 帧电脑打字动作。
+
 ## Install / 安装
 
 Copy the `bead-girl` folder into your Codex pets directory:

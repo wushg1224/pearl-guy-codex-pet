@@ -4,17 +4,18 @@
 set -e
 cd "$(dirname "$0")"
 
-APP="build/珍珠小子.app"
-xcrun swiftc -O -o PearlPet main.swift -framework AppKit
+STAGING="$(mktemp -d /private/tmp/pearl-build.XXXXXX)"
+trap 'rm -rf "$STAGING"' EXIT
+APP="$STAGING/珍珠小子.app"
+xcrun swiftc -O -o "$STAGING/PearlPet" main.swift ChatServiceManager.swift ChatWindowController.swift -framework AppKit -framework WebKit
 
-rm -rf build
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp PearlPet "$APP/Contents/MacOS/PearlPet"
+cp -X "$STAGING/PearlPet" "$APP/Contents/MacOS/PearlPet"
 # 优先使用扩展雪碧图（含第 10 行抱抱动画），没有则用标准 9 行版
 if [ -f ../bead-girl/spritesheet-extended.webp ]; then
-  cp ../bead-girl/spritesheet-extended.webp "$APP/Contents/Resources/spritesheet.webp"
+  cp -X ../bead-girl/spritesheet-extended.webp "$APP/Contents/Resources/spritesheet.webp"
 else
-  cp ../bead-girl/spritesheet.webp "$APP/Contents/Resources/spritesheet.webp"
+  cp -X ../bead-girl/spritesheet.webp "$APP/Contents/Resources/spritesheet.webp"
 fi
 
 cat > "$APP/Contents/Info.plist" <<'EOF'
@@ -38,7 +39,30 @@ EOF
 
 xattr -cr "$APP"
 codesign --force -s - "$APP"
+codesign --verify --strict "$APP"
+mkdir -p build
+rm -rf "build/珍珠小子.app"
+ditto --noextattr --norsrc "$APP" "build/珍珠小子.app"
 
-rm -rf ~/Desktop/珍珠小子.app
-cp -R "$APP" ~/Desktop/
-echo "完成：~/Desktop/珍珠小子.app（双击启动，右键宠物可退出）"
+# Build only by default, so verification precedes desktop replacement.
+if [[ "${1:-}" == "--install" ]]; then
+  DESKTOP_APP="$HOME/Desktop/珍珠小子.app"
+  if [[ -e "$DESKTOP_APP" ]]; then
+    BACKUP="$HOME/Desktop/珍珠小子备份-$(date +%Y%m%d-%H%M%S)-$$.app"
+    mv "$DESKTOP_APP" "$BACKUP"
+    echo "旧版备份：$BACKUP"
+  fi
+  ditto --noextattr --norsrc "$APP" "$DESKTOP_APP"
+  # Preserve the previous Finder custom icon after installing the signed bundle.
+  if [[ -n "${BACKUP:-}" && -f "$BACKUP/"$'Icon\r' ]]; then
+    ditto "$BACKUP/"$'Icon\r' "$DESKTOP_APP/"$'Icon\r'
+    ICON_INFO="$(xattr -px com.apple.FinderInfo "$BACKUP" 2>/dev/null || true)"
+    if [[ -n "$ICON_INFO" ]]; then
+      xattr -wx com.apple.FinderInfo "$ICON_INFO" "$DESKTOP_APP"
+    fi
+    touch "$DESKTOP_APP"
+  fi
+  echo "已更新：$DESKTOP_APP"
+else
+  echo "已构建：$PWD/build/珍珠小子.app（验证后使用 ./build.sh --install 备份并更新桌面 App）"
+fi

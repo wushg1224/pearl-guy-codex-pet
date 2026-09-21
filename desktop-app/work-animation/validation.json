@@ -1,0 +1,112 @@
+{
+  "ok": true,
+  "frames_root": "extracted-frames",
+  "states": [
+    "running"
+  ],
+  "errors": [],
+  "warnings": [],
+  "rows": [
+    {
+      "state": "running",
+      "expected_frames": 6,
+      "actual_frames": 6,
+      "extraction_method": "components",
+      "ok": true,
+      "errors": [],
+      "warnings": [],
+      "frames": [
+        {
+          "index": 0,
+          "file": "extracted-frames/running/00.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 27355,
+          "bbox": [
+            11,
+            5,
+            180,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 0
+        },
+        {
+          "index": 1,
+          "file": "extracted-frames/running/01.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 27767,
+          "bbox": [
+            9,
+            5,
+            182,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 0
+        },
+        {
+          "index": 2,
+          "file": "extracted-frames/running/02.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 27573,
+          "bbox": [
+            10,
+            5,
+            182,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 0
+        },
+        {
+          "index": 3,
+          "file": "extracted-frames/running/03.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 27158,
+          "bbox": [
+            10,
+            5,
+            181,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 0
+        },
+        {
+          "index": 4,
+          "file": "extracted-frames/running/04.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 27055,
+          "bbox": [
+            11,
+            5,
+            181,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 0
+        },
+        {
+          "index": 5,
+          "file": "extracted-frames/running/05.png",
+          "width": 192,
+          "height": 208,
+          "nontransparent_pixels": 27112,
+          "bbox": [
+            11,
+            5,
+            180,
+            203
+          ],
+          "edge_pixels": 0,
+          "chroma_adjacent_pixels": 0
+        }
+      ]
+    }
+  ]
+}

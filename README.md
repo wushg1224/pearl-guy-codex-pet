@@ -15,6 +15,10 @@ deco on Xiaohongshu. His signature feature is a small mole beside his mouth.
 
 此交互属于[独立桌面 App](desktop-app/README.md)，Codex 内的 pet 状态由 Codex 控制。上方动作概念图已同步更新，第 7 行 `running` 为新的 6 帧电脑打字动作。
 
+## 桌面待机 / Desktop standby
+
+独立桌面 App 待机时保持原位置：常驻 `row 0 idle`，每隔 20–50 秒随机播放 `row 3 waving`、`row 5 failed`、`row 6 waiting` 或 `row 8 review`，结束后回到 idle。待机不自动散步、跳跃或打电脑；手动拖动、悬停互动和右键菜单操作保留。此规则仅适用于独立桌面 App。
+
 ## Install / 安装
 
 Copy the `bead-girl` folder into your Codex pets directory:

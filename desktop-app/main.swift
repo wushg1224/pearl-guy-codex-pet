@@ -247,16 +247,10 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
             scheduleNextAct(after: .random(in: 8...15))
             return
         }
-        let roll = Int.random(in: 0..<100)
-        switch roll {
-        case 0..<30:  startWalk()
-        case 30..<45: playAct(.waving, loops: 2)
-        case 45..<60: playAct(.jumping, loops: 2)
-        case 60..<75: playAct(.running, loops: 3)
-        case 75..<85: playAct(.waiting, loops: 2)
-        case 85..<95: playAct(.review, loops: 2)
-        default:      playAct(.failed, loops: 1)
-        }
+        // Desktop standby stays in place: row 0 between rows 3, 5, 6 and 8.
+        let standbyActs: [PetState] = [.waving, .failed, .waiting, .review]
+        let nextState = standbyActs.randomElement()!
+        playAct(nextState, loops: nextState == .failed ? 1 : 2)
     }
 
     private func playAct(_ st: PetState, loops: Int) {

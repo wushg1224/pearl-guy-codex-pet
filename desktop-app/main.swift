@@ -71,6 +71,7 @@ final class PetView: NSView {
     }
 
     override func rightMouseDown(with event: NSEvent) {
+        controller?.userRightClicked()
         guard let menu = controller?.buildMenu() else { return }
         NSMenu.popUpContextMenu(menu, with: event, for: self)
     }
@@ -80,6 +81,8 @@ final class PetView: NSView {
 
 final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation {
     private var window: NSWindow!
+    private var chatWindow: ChatWindowController?
+    private var terminating = false
     private var petView: PetView!
     private var frames: [[CGImage]] = []   // [row][col]
 
@@ -110,6 +113,19 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
         makeWindow()
         play(.idle, loops: nil)
         scheduleNextAct()
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard let chatWindow else { return .terminateNow }
+        guard !terminating else { return .terminateLater }
+        terminating = true
+        DispatchQueue.main.async { [weak self] in
+            chatWindow.requestClose { success in
+                self?.terminating = false
+                sender.reply(toApplicationShouldTerminate: success)
+            }
+        }
+        return .terminateLater
     }
 
     private func loadSpritesheet() -> Bool {
@@ -210,6 +226,7 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
     }
 
     private func backToIdle() {
+        actionInProgress = false
         stopWalk()
         play(.idle, loops: nil)
     }
@@ -230,19 +247,14 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
             scheduleNextAct(after: .random(in: 8...15))
             return
         }
-        let roll = Int.random(in: 0..<100)
-        switch roll {
-        case 0..<30:  startWalk()
-        case 30..<45: playAct(.waving, loops: 2)
-        case 45..<60: playAct(.jumping, loops: 2)
-        case 60..<75: playAct(.running, loops: 3)
-        case 75..<85: playAct(.waiting, loops: 2)
-        case 85..<95: playAct(.review, loops: 2)
-        default:      playAct(.failed, loops: 1)
-        }
+        // Desktop standby stays in place: row 0 between rows 3, 5, 6 and 8.
+        let standbyActs: [PetState] = [.waving, .failed, .waiting, .review]
+        let nextState = standbyActs.randomElement()!
+        playAct(nextState, loops: nextState == .failed ? 1 : 2)
     }
 
     private func playAct(_ st: PetState, loops: Int) {
+        actionInProgress = true
         stopWalk()
         play(st, loops: loops) { [weak self] in
             self?.backToIdle()
@@ -253,6 +265,7 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
     // MARK: Walking
 
     private func startWalk() {
+        actionInProgress = false
         guard let screen = (window.screen ?? NSScreen.main)?.visibleFrame else { return }
         let w = window.frame.width
         let minX = screen.minX + 10, maxX = screen.maxX - w - 10
@@ -298,10 +311,14 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
     // MARK: User interaction
 
     private var hovering = false
+    // Menu-triggered animations survive pointer events while the menu closes.
+    private var actionInProgress = false
+    private var continuousWork = false
 
     func hoverBegan() {
         guard !hovering else { return }
         hovering = true
+        guard !actionInProgress else { return }
         stopWalk()
         play(hugState, loops: nil)   // keep hugging while the mouse stays on him
     }
@@ -309,6 +326,7 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
     func hoverEnded() {
         guard hovering else { return }
         hovering = false
+        guard !actionInProgress else { return }
         backToIdle()
         scheduleNextAct()
     }
@@ -318,8 +336,16 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
     }
 
     func userTapped() {
+        guard !continuousWork else { return }
         guard !hovering else { return }   // already hugging under the cursor
         playAct(.waving, loops: 2)
+        scheduleNextAct()
+    }
+
+    func userRightClicked() {
+        guard continuousWork else { return }
+        continuousWork = false
+        backToIdle()
         scheduleNextAct()
     }
 
@@ -327,6 +353,8 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
 
     func buildMenu() -> NSMenu {
         let menu = NSMenu()
+        menu.addItem(withTitle: "和小鱼聊天", action: #selector(menuChat), keyEquivalent: "").target = self
+        menu.addItem(.separator())
         menu.addItem(withTitle: "打个招呼 👋", action: #selector(menuWave), keyEquivalent: "").target = self
         menu.addItem(withTitle: "跳一跳 🦘", action: #selector(menuJump), keyEquivalent: "").target = self
         menu.addItem(withTitle: "去散步 🚶", action: #selector(menuWalk), keyEquivalent: "").target = self
@@ -352,10 +380,23 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
 
     func validateMenuItem(_ menuItem: NSMenuItem) -> Bool { true }
 
+    @MainActor @objc private func menuChat() {
+        guard !terminating else { return }
+        if chatWindow == nil { chatWindow = ChatWindowController(petScreen: window.screen) }
+        chatWindow?.present()
+    }
+
     @objc private func menuWave() { playAct(.waving, loops: 2); scheduleNextAct() }
     @objc private func menuJump() { playAct(.jumping, loops: 2); scheduleNextAct() }
     @objc private func menuWalk() { stopWalk(); startWalk() }
-    @objc private func menuWork() { playAct(.running, loops: 4); scheduleNextAct() }
+    @objc private func menuWork() {
+        stopWalk()
+        actTimer?.invalidate()
+        actTimer = nil
+        continuousWork = true
+        actionInProgress = true
+        play(.running, loops: nil)
+    }
     @objc private func menuQuit() { NSApp.terminate(nil) }
 
     @objc private func menuResize(_ sender: NSMenuItem) {
@@ -374,6 +415,22 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
 
 let app = NSApplication.shared
 app.setActivationPolicy(.accessory)   // no Dock icon, no menu bar takeover
+// Standard editing shortcuts also work while the accessory app's WebView is key.
+let mainMenu = NSMenu()
+let appItem = NSMenuItem()
+let appMenu = NSMenu()
+appMenu.addItem(withTitle: "退出珍珠小子", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+appItem.submenu = appMenu
+mainMenu.addItem(appItem)
+let editItem = NSMenuItem()
+let editMenu = NSMenu(title: "编辑")
+for (title, action, key) in [("撤销", "undo:", "z"), ("剪切", "cut:", "x"),
+                              ("复制", "copy:", "c"), ("粘贴", "paste:", "v"), ("全选", "selectAll:", "a")] {
+    editMenu.addItem(withTitle: title, action: Selector(action), keyEquivalent: key)
+}
+editItem.submenu = editMenu
+mainMenu.addItem(editItem)
+app.mainMenu = mainMenu
 let controller = PetController()
 app.delegate = controller
 app.run()

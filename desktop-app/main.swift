@@ -22,6 +22,59 @@ enum PetState: Int, CaseIterable {
     var frameCount: Int { durations.count }
 }
 
+// MARK: - Greeting frame artwork
+
+/// Bakes the approved speech bubbles into the original sprites, with room above
+/// every state so the character's scale and foot position never change.
+enum GreetingFrames {
+    static func padding(for image: CGImage) -> Int {
+        Int((Double(image.height) / 3).rounded())
+    }
+
+    static func render(_ sprite: CGImage, state: PetState, frame: Int,
+                       artwork: CGImage?) -> CGImage {
+        guard let artwork, artwork.width == 2079, artwork.height == 756 else { return sprite }
+        let padding = padding(for: sprite)
+        guard let context = CGContext(data: nil, width: sprite.width,
+                                      height: sprite.height + padding,
+                                      bitsPerComponent: 8, bytesPerRow: 0,
+                                      space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return sprite }
+        context.interpolationQuality = .none
+        context.draw(sprite, in: CGRect(x: 0, y: 0, width: sprite.width, height: sprite.height))
+
+        if state == .waving && (1...3).contains(frame) {
+            // Pixel bounds of the three bubbles in the approved design.png.
+            let crops = [CGRect(x: 842, y: 154, width: 133, height: 119),
+                         CGRect(x: 1297, y: 90, width: 238, height: 188),
+                         CGRect(x: 1889, y: 161, width: 118, height: 111)]
+            let widths = [44.0, 82.0, 30.0]
+            let source = crops[frame - 1]
+            if let bubble = artwork.cropping(to: source) {
+                let factor = Double(sprite.width) / 192
+                let width = (widths[frame - 1] * factor).rounded()
+                let height = (width * Double(bubble.height) / Double(bubble.width)).rounded()
+                let x = Double(sprite.width) - width - (6 * factor).rounded()
+                let y = Double(sprite.height) + (3 * factor).rounded()
+                context.saveGState()
+                if frame == 2 {
+                    // The mockup's hair lies below-left of the large bubble's
+                    // tail. Clip that corner out; retain the complete bubble.
+                    let body = CGRect(x: x, y: y + height * 38 / 188,
+                                      width: width, height: height * 150 / 188)
+                    let tail = CGRect(x: x + width * 45 / 238, y: y,
+                                      width: width * 100 / 238, height: height)
+                    context.clip(to: [body, tail])
+                }
+                context.draw(bubble, in: CGRect(x: x, y: y, width: width, height: height))
+                context.restoreGState()
+            }
+        }
+        return context.makeImage() ?? sprite
+    }
+}
+
 // MARK: - Pet view (renders one frame, handles drag / click / context menu)
 
 final class PetView: NSView {
@@ -145,6 +198,17 @@ final class PetController: NSObject, NSApplicationDelegate, NSMenuItemValidation
             return (0..<st.frameCount).compactMap { col in
                 cg.cropping(to: CGRect(x: col * cw, y: st.rawValue * ch, width: cw, height: ch))
             }
+        }
+        // These are single composited frames, not a separate floating bubble.
+        if let url = Bundle.main.url(forResource: "greeting-design", withExtension: "png"),
+           let artwork = NSImage(contentsOf: url)?.cgImage(forProposedRect: nil, context: nil, hints: nil),
+           artwork.width == 2079, artwork.height == 756 {
+            frames = PetState.allCases.map { st in
+                frames[st.rawValue].enumerated().map { index, sprite in
+                    GreetingFrames.render(sprite, state: st, frame: index, artwork: artwork)
+                }
+            }
+            cellSize.height += CGFloat(Int((Double(ch) / 3).rounded()))
         }
         // The 9 standard rows are required; the hug row is optional.
         return PetState.allCases
